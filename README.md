@@ -6,7 +6,7 @@ This repository contains various writeups and research documents on offensive se
 
 1. [How CL.TE Request Smuggling Works](./How%20CL.TE%20Request%20Smuggling%20Works.pdf) – Explanation of CL.TE request smuggling attacks and their impact.  
 2. [ORM Injection](./ORM%20Injection.pdf) – A deep dive into Object-Relational Mapping (ORM) injection techniques.  
-3. [Vulnerabilities](./Vulnerabilities.pdf) – General overview of common security vulnerabilities and their exploitation.  
+3. [Vulnerabilities](./Vulnerbilities.pdf) – General overview of common security vulnerabilities and their exploitation.  
 4. [Why and How Other Users' Requests Are Intercepted](./Why%20and%20How%20Other%20Users%27%20Requests%20Are%20Intercepted.pdf) – Research on request interception and session hijacking.  
 5. [XXE Injection](./XXE%20Injection.pdf) – A breakdown of XML External Entity (XXE) attacks and mitigation techniques.
 6. [Exploiting Race Condition](./EXPLOITING%20RACE%20CONDITION.pdf) - race condition occurs when multiple threads or processes access shared resources simultaneously in an unsynchronized manner, leading to unpredictable behavior or security vulnerabilities.
